@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-serif: "Playfair Display", Georgia, serif;
+    --font-sans: "Inter", system-ui, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream text-ink font-sans;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-8xl px-6 md:px-10 lg:px-16;
+  }
+
+  .section-y {
+    @apply py-20 md:py-28;
+  }
+
+  .label {
+    @apply text-[11px] font-medium uppercase tracking-super-wide text-clay;
+  }
+
+  .label-gold {
+    @apply text-[11px] font-medium uppercase tracking-super-wide text-gold;
+  }
+
+  .h-display    { @apply font-serif text-display-sm md:text-display; }
+  .h-display-lg { @apply font-serif text-display md:text-display-lg; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+           px-8 py-3.5 text-[12px] font-medium uppercase tracking-super-wide
+           transition-all duration-500 ease-smooth;
+  }
+  .btn-primary {
+    @apply btn bg-cacao text-cream hover:bg-espresso hover:shadow-hover;
+  }
+  .btn-outline {
+    @apply btn border border-cacao/30 text-cacao
+           hover:border-cacao hover:bg-cacao hover:text-cream;
+  }
+  .btn-gold {
+    @apply btn bg-gold text-espresso hover:bg-gold-light hover:shadow-hover;
+  }
+  .btn-wa {
+    @apply btn bg-[#25D366] text-white hover:bg-[#1EBE5A] hover:shadow-hover;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm
+           placeholder:text-muted/60
+           focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20
+           transition;
+  }
+}
