@@ -1,87 +1,93 @@
-🚀 T.Y CULTURE: COMPLETE DEPLOYMENT GUIDE
-📦 PART 1: How to run this locally (For future developers)
-If you or another developer downloads this code to a new computer, follow these steps to run it locally.
+```markdown
+# 🚀 T.Y Culture - VPS Deployment Guide
 
-1. Install Dependencies:
+This document contains the exact steps to deploy the T.Y Culture Next.js application to a production VPS (Ubuntu 22.04 recommended).
 
-bash
-npm install
-2. Set up Environment Variables:
-Create a file named .env in the root folder and paste this (ask the owner for the real Paystack keys):
+### ⚠️ Prerequisites
+1. You have a VPS running Ubuntu 22.04 (e.g., DigitalOcean, Hostinger, Contabo).
+2. You have pointed your domain's **A Record** to your VPS IP address.
+3. You are logged into your VPS via SSH as `root`.
 
-env
-DATABASE_URL="file:./dev.db"
-AUTH_SECRET="make-up-a-long-random-string-here"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-PAYSTACK_SECRET_KEY="sk_test_xxx"
-PAYSTACK_PUBLIC_KEY="pk_test_xxx"
-3. Setup Database & Seed Data:
+---
 
-bash
-npx prisma generate
-npx prisma db push
-npm run db:seed
-4. Start the Server:
+### STEP 1: Install Required Software
+Copy and paste this entire block into your VPS terminal. This installs Node.js, Git, Nginx (web server), Certbot (SSL), and PM2 (process manager).
 
-bash
-npm run dev
-Go to http://localhost:3000. Admin login is /admin/login with admin@tyculture.com / admin123.
-
-🌍 PART 2: VPS Deployment (Putting it Live on the Internet)
-Assumption: You have a VPS running Ubuntu 22.04, and you have pointed your domain's A Record to your VPS IP address.
-
-STEP 1: Install Required Software on VPS
-Connect to your VPS via SSH (ssh root@your_vps_ip) and run this block:
-
-bash
+```bash
 apt update && apt upgrade -y
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt install -y nodejs git nginx certbot python3-certbot-nginx
 npm install -g pm2
-STEP 2: Clone Your Code from GitHub
+```
 
-bash
+---
+
+### STEP 2: Clone the Repository
+Clone your code from GitHub to the server. *(If the repo is private, you will need to use a GitHub Personal Access Token or deploy key).*
+
+```bash
 git clone https://github.com/meetelder147-hub/ty-culture.git
 cd ty-culture
-STEP 3: Create Production Environment Variables
-Open the env file:
+```
 
-bash
+---
+
+### STEP 3: Setup Production Environment Variables
+Create the `.env` file:
+
+```bash
 nano .env
-Paste this inside (replace with your actual domain and LIVE Paystack keys):
+```
 
-env
+Paste the following into the file. **Make sure to replace the placeholders with your actual domain and LIVE Paystack keys:**
+
+```env
 DATABASE_URL="file:./dev.db"
-AUTH_SECRET="generate-a-new-long-random-secret-here"
+AUTH_SECRET="generate-a-very-long-random-string-here-for-security"
 NEXT_PUBLIC_SITE_URL="https://yourdomain.com"
-PAYSTACK_SECRET_KEY="sk_live_xxxx"
-PAYSTACK_PUBLIC_KEY="pk_live_xxxx"
-(Press Ctrl+O to save, Enter to confirm, Ctrl+X to exit).
+PAYSTACK_SECRET_KEY="sk_live_xxxxxxxxxxxxxxxxxxxxxxxxx"
+PAYSTACK_PUBLIC_KEY="pk_live_xxxxxxxxxxxxxxxxxxxxxxxxx"
+```
 
-STEP 4: Install, Build, and Setup Database
+*(Press `Ctrl + O` to save, hit `Enter` to confirm, then `Ctrl + X` to exit).*
 
-bash
+---
+
+### STEP 4: Build & Setup the Database
+Run these commands to install dependencies, set up the database, seed the admin account, and build the app:
+
+```bash
 npm install
 npx prisma generate
 npx prisma db push
 npm run db:seed
 npm run build
-STEP 5: Start the App with PM2 (Keeps it running 24/7)
+```
 
-bash
+---
+
+### STEP 5: Start the App (Keep it running 24/7)
+Use PM2 to run the Next.js app in the background.
+
+```bash
 pm2 start npm --name "ty-culture" -- start
 pm2 save
 pm2 startup
-(Copy and paste the command that PM2 outputs at the very end to ensure it restarts on server reboot).
+```
+**Important:** The `pm2 startup` command will output a long command (starting with `sudo env PATH=...`). **Copy that entire line, paste it into your terminal, and hit Enter.** This ensures your site automatically restarts if the server reboots.
 
-STEP 6: Configure Nginx (Web Server)
-Create the config file:
+---
 
-bash
+### STEP 6: Configure Nginx (Web Server)
+Create the Nginx configuration file:
+
+```bash
 nano /etc/nginx/sites-available/tyculture
-Paste this (replace yourdomain.com with your real domain):
+```
 
-nginx
+Paste this configuration (replace `yourdomain.com` with your actual domain):
+
+```nginx
 server {
     server_name yourdomain.com www.yourdomain.com;
 
@@ -94,29 +100,37 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 }
-(Save and exit: Ctrl+O, Enter, Ctrl+X).
+```
+*(Save and exit: `Ctrl + O`, `Enter`, `Ctrl + X`).*
 
 Enable the site and restart Nginx:
 
-bash
+```bash
 ln -s /etc/nginx/sites-available/tyculture /etc/nginx/sites-enabled/
 nginx -t
 systemctl restart nginx
-STEP 7: Secure with Free SSL (HTTPS)
+```
 
-bash
+---
+
+### STEP 7: Install Free SSL (HTTPS)
+Run this command to secure your site with a free Let's Encrypt certificate (replace `yourdomain.com`):
+
+```bash
 certbot --nginx -d yourdomain.com -d www.yourdomain.com
-(Follow the prompts, choose to redirect HTTP to HTTPS).
+```
+*(When prompted, type `2` to redirect all traffic to HTTPS, and enter your email if asked).*
 
-⚠️ PART 3: CRITICAL POST-LAUNCH CHECKLIST
-Once the site is live, you must do these three things immediately:
+---
 
-Change the Admin Password:
-Go to /admin/login and log in. Currently, it uses admin123. To change this, you will need to generate a new hash on the VPS or ask a developer to update the seed script. (For now, the site is secure as long as nobody knows the URL).
+### 🎉 POST-LAUNCH CHECKLIST
 
-Update Site Settings:
-Go to /admin/settings and update the Logo URL, Tagline, Real Bank Details, Real WhatsApp Number, and Address.
+Your site is now live! Open your browser and go to `https://yourdomain.com`.
 
-Test the Payment Flow:
-Make a test order on the live site using Bank Transfer. Check that the order appears in /admin/orders. Then, make a test order using Paystack (use Paystack's test cards if you haven't swapped to live keys yet) and ensure it redirects properly.
-
+1. **Admin Login:** Go to `https://yourdomain.com/admin/login`.
+   - **Default Email:** `admin@tyculture.com`
+   - **Default Password:** `admin123`
+2. **Change Password:** Immediately log in and change the admin password for security.
+3. **Update Settings:** Go to `/admin/settings` and update the **Logo, Tagline, Bank Details, and WhatsApp Number**.
+4. **Test Payments:** Make a test order using Bank Transfer and Paystack to ensure the flow is working perfectly.
+```
